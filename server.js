@@ -9,10 +9,11 @@ const multer = require('multer');
 const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const methodOverride = require('method-override');
+const morgan = require('morgan');
 
 const app = express();
 const corsOptions = {
-  origin: process.env.EVENTBOX_ORIGIN,
+  origin: [ `${process.env.EVENTBOX_ORIGIN}`, 'http://localhost:3000' ],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 // cors
@@ -21,6 +22,12 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(bodyParser.json());
 app.use(methodOverride('_method'));
+
+morgan.token('decodeUrl', function (req, res) {
+  return decodeURI(req.originalUrl)
+})
+
+app.use(morgan('combined'))
 
 // Mongo URI
 const mongoURI = process.env.MONGODB_URI

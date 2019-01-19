@@ -18,6 +18,6 @@ RUN yarn install
 COPY ["./server.js", "/app/server/"]
 COPY ["./.env", "/app/server/"]
 
-CMD [ "yarn", "start" ]
+# CMD [ "yarn", "start" ]
 
-EXPOSE 3000
+# EXPOSE 3000
