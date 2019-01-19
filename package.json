@@ -5,6 +5,10 @@
   "main": "index.js",
   "author": "vinh_nguyen1211@yahoo.com.vn",
   "license": "MIT",
+  "scripts": {
+    "start": "NODE_ENV=production && node server.js"
+  },
+  "keywords": [],
   "dependencies": {
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
