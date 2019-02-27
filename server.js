@@ -13,7 +13,7 @@ const morgan = require('morgan');
 
 const app = express();
 const corsOptions = {
-  origin: [ `${process.env.EVENTBOX_ORIGIN}`, 'http://localhost:3000' ],
+  origin: [ `${process.env.HOST1}`, `${process.env.HOST2}`, 'http://localhost:3000' ],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 // cors
