@@ -10,6 +10,7 @@ const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
+const { convert } = require('convert-svg-to-png');
 
 const app = express();
 const corsOptions = {
@@ -163,7 +164,7 @@ app.get('/image/:filename', (req, res) => {
 // @route GET /ticket/:filename
 // @desc Display ticket svg
 app.get('/ticket/:filename', (req, res) => {
-  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+  gfs.files.findOne({ filename: req.params.filename }, async (err, file) => {
     // Check if file
     if (!file || file.length === 0) {
       return res.status(404).json({
@@ -178,6 +179,9 @@ app.get('/ticket/:filename', (req, res) => {
         'Content-Type': 'image/svg+xml',
       })
       const readstream = gfs.createReadStream(file.filename);
+      // const isPng = req.params.type === 1
+      // console.log('isPng: ', isPng, ',type: ',req.params.type)
+      // const png = await convert(readstream);
       readstream.pipe(res)
     } else {
       res.status(404).json({
@@ -187,6 +191,56 @@ app.get('/ticket/:filename', (req, res) => {
   });
 });
 
+// @route GET /ticket/:filename/:type
+// @desc Display ticket (svg/png)
+app.get('/ticket/:filename/:type', (req, res) => {
+  gfs.files.findOne({ filename: req.params.filename }, async (err, file) => {
+    // Check if file
+    if (!file || file.length === 0) {
+      return res.status(404).json({
+        err: 'No file exists'
+      });
+    }
+
+    // Check if image
+    if (file.contentType === 'image/svg+xml') {
+      // Read output to browser
+      const readstream = gfs.createReadStream(file.filename);
+      const isPng = req.params.type == 1
+      if(isPng){
+        // res.writeHead(200, {
+        //   'Content-Type': 'image/png',
+        // })
+        const buffer = []
+        const result = () => {
+          return new Promise((resolve) => {
+            readstream.on('data', (chunk) => {
+              buffer.push(chunk)
+            })
+            readstream.on('end', async () => {
+              const svgBuffer = Buffer.concat(buffer)
+              const png = await convert(svgBuffer, {width: 480, height: 480});
+              resolve(png)
+            })
+          })
+        }
+        const imgPng = await result()
+        res.set('Content-Type', 'image/png');
+        return res.send(imgPng)
+      }
+      else{
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml',
+        })
+        readstream.pipe(res)
+      }
+    } else {
+      res.status(404).json({
+        err: 'Not an image'
+      });
+    }
+  });
+});
 
 // @route DELETE /files/:id
 // @desc  Delete file
