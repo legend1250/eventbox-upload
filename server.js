@@ -10,7 +10,7 @@ const GridFsStorage = require('multer-gridfs-storage');
 const Grid = require('gridfs-stream');
 const methodOverride = require('method-override');
 const morgan = require('morgan');
-const { convert } = require('convert-svg-to-png');
+const sharp = require('sharp');
 
 const app = express();
 const corsOptions = {
@@ -219,7 +219,7 @@ app.get('/ticket/:filename/:type', (req, res) => {
             })
             readstream.on('end', async () => {
               const svgBuffer = Buffer.concat(buffer)
-              const png = await convert(svgBuffer, {width: 480, height: 480});
+              const png = await sharp(new Buffer(svgBuffer), { density: 900 }).png().toBuffer();
               resolve(png)
             })
           })
